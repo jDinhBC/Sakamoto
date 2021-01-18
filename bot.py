@@ -152,4 +152,4 @@ async def on_message(message):
 
 if __NAME__ == __MAIN__:
     TOKEN = input("Input Token: ")
-client.run(TOKEN)
+    client.run(TOKEN)
