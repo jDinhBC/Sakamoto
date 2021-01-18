@@ -7,7 +7,7 @@ import random
 import datetime
 import time
 
-TOKEN = 'ODAwMTY5MzgzMTk5NjM3NTM0.YAONzw.m9DFyNc5X7rL_1ytw4NiANLun68'
+TOKEN = ''
 client = commands.Bot(command_prefix = '!')
 startdate = datetime.datetime.now().strftime("%x")
 intents = discord.Intents.default()
@@ -150,4 +150,6 @@ async def on_message(message):
         if (activated == False ):
             await message.channel.send("Invalid Command/Inputs")
 
+if __NAME__ == __MAIN__:
+    TOKEN = input("Input Token: ")
 client.run(TOKEN)
