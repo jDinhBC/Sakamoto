@@ -1,11 +1,11 @@
 # import discord.py allows access to discords api
 import discord
 
+#import music module
+import wavelink
+
 # import os module
 import os
-
-#import youtube module
-import youtube_dl
 
 #import load_dotenv func from dotenv module
 from dotenv import load_dotenv
@@ -29,7 +29,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 
-class Music(commands.Cog)
+class Music(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -44,17 +44,16 @@ class Music(commands.Cog)
         await channel.connect()
 
     @commands.command()
-    async def play(self, ctx, url):
+    async def play(self, ctx, *, url):
         #plays url
 
-        await with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-            ctx.voice_client.play(player, after=lambda e:print('Player error: %s' % e) if e else None)
+        player = await voice_client.create_ytdl_player(url)
+        player.start()
 
         await ctx.send('Now playing: {}'.format(player.title))
 
     @commands.command()
-    async def disconnect(ctx):
+    async def disconnect(self, ctx):
         await ctx.voice_channel.disconnect()
 
 
