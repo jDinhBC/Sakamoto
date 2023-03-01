@@ -1,0 +1,34 @@
+{
+  "name": "sakamoto",
+  "version": "1.0.0",
+  "description": "Multi-Purpose Discord bot",
+  "main": "./prod/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node -r dotenv/config ./prod/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jDinhBC/Sakamoto.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jDinhBC/Sakamoto/issues"
+  },
+  "homepage": "https://github.com/jDinhBC/Sakamoto#readme",
+  "dependencies": {
+    "@discordjs/rest": "^1.5.0",
+    "@types/node": "^18.14.2",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "typescript": "^4.9.5"
+  }
+}
