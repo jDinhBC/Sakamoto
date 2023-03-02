@@ -19,5 +19,10 @@ const client = new Client({
 });
 
 client.commands = new Collection<string, Command>();
+const handlersDir = join(__dirname, './handlers');
+
+readdirSync(handlersDir).forEach(handler => {
+    require(`${handlersDir}/${handler}`)(client);
+});
 
 client.login(process.env.CLIENT_TOKEN);
