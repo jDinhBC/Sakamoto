@@ -34,12 +34,11 @@ export class diceRollExpression implements iDiceExpression{
     public RandomNumber(max: number) {
         let seed1 = Math.floor(Math.random() * 100000);
         let seed2 = Math.floor(Math.random() * 100000);
-        let valueToHash = seed1.toString() + seed2.toString();
-        let hash = createHash('sha256').update(valueToHash).digest('hex');
+        let hash = createHash('sha256')
+        .update(seed1.toString() + seed2.toString())
+        .digest('hex');
         let selection = Math.floor(Math.random()*50)+11;
-        let seed = parseInt(hash.slice(selection-10,selection));
-        let random = seedrandom(seed);
-        let rng = random();
-        return Math.floor(rng*max);
+        let rng = seedrandom(parseInt(hash.slice(selection-10,selection)));
+        return Math.floor(rng()*max);
     }
 }
