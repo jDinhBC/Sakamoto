@@ -14,7 +14,10 @@ export class diceRollExpression implements iDiceExpression{
     public Evaluate(): number {
         let result: number = 0;
         for (let numberDie = 0; numberDie < this._numberOfDice; ++numberDie) {
-            result += this.RandomNumber(this._diceType+1);
+            let number = this.RandomNumber(this._diceType);
+            // number will always be at least 1
+            console.log(number);
+            result += number < 1 ? 1 : number;
         }
         return result;
     }
@@ -38,6 +41,6 @@ export class diceRollExpression implements iDiceExpression{
         .update(seed1.toString() + seed2.toString())
         .digest('hex');
         let rng = seedrandom(parseInt(hash.slice(0,Math.floor(Math.random()*50)+10)));
-        return Math.floor(rng()*max);
+        return Math.round(rng()*max);
     }
 }

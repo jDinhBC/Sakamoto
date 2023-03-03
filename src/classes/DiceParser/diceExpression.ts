@@ -3,13 +3,21 @@ import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 
 export class DiceExpression {
-    private static readonly numberExpression: RegExp = new RegExp("^[0-9]+$");
-    private static readonly diceExpression: RegExp = new RegExp("^([0-9]*)d([0-9]+|%)$");
+    private static readonly _numberExpression: RegExp = new RegExp("^[0-9]+$");
+    private static readonly _diceExpression: RegExp = new RegExp("^([0-9]*)d([0-9]+|%)$");
 
-    private nodes: Map<number, iDiceExpression> = new Map<number, iDiceExpression>();
+    private nodes: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
     
+    constructor (expression: string) {
+        this.DiceExpressionParsing(expression);
+    }
+
     public DiceExpressionParsing(expression: string) {
         // Reformats input
+        if (!expression) {
+            throw new Error("Dice Expression was not successfully processed.");
+        }
+
         let expressions = expression.trim().replace('+', ' + ').replace('-', ' - ').split(' ');
         // If empty
         if (!expressions) {
@@ -39,13 +47,13 @@ export class DiceExpression {
             let multiplier = operator == '+' ? +1 : -1;
 
             // if operand match regex, number or diceRoll
-            if (DiceExpression.numberExpression.test(operand)) {
-                this.nodes.set(multiplier, new normalExpression(+operand));
-            } else if (DiceExpression.diceExpression.test(operand)) {
-                let regexParsed = operand.match(DiceExpression.diceExpression);
+            if (DiceExpression._numberExpression.test(operand)) {
+                this.nodes.push([multiplier, new normalExpression(+operand)]);
+            } else if (DiceExpression._diceExpression.test(operand)) {
+                let regexParsed = operand.match(DiceExpression._diceExpression);
                 let numberOfDice = regexParsed == null ? 1 : +regexParsed[1];
                 let dieType = regexParsed == null ? 100 : +regexParsed[2];
-                this.nodes.set(multiplier, new diceRollExpression(numberOfDice, dieType));
+                this.nodes.push([multiplier, new diceRollExpression(numberOfDice, dieType)]);
             } else {
                 throw new Error("Dice expression was not in expected format.");
             }
@@ -54,8 +62,8 @@ export class DiceExpression {
 
     public Evaluate() {
         let result: number = 0;
-        this.nodes.forEach((value, key) => {
-            result += key * value.Evaluate();
+        this.nodes.forEach((value) => {
+            result += value[0] * value[1].Evaluate();
         })
         return result;
     }
