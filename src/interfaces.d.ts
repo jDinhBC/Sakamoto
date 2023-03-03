@@ -7,6 +7,11 @@ export interface Command {
     autocomplete?: (interaction: AutocompleteInteraction) => void;
 }
 
+export interface iDiceExpression {
+    Evaluate(): number;
+    GetAverage(): number;
+}
+
 export interface BotEvents {
     name: string;
     once?: boolean | false;
