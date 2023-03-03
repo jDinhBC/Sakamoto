@@ -37,8 +37,7 @@ export class diceRollExpression implements iDiceExpression{
         let hash = createHash('sha256')
         .update(seed1.toString() + seed2.toString())
         .digest('hex');
-        let selection = Math.floor(Math.random()*50)+11;
-        let rng = seedrandom(parseInt(hash.slice(selection-10,selection)));
+        let rng = seedrandom(parseInt(hash.slice(0,Math.floor(Math.random()*50)+10)));
         return Math.floor(rng()*max);
     }
 }
