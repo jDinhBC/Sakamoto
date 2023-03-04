@@ -13,14 +13,18 @@ const command : Command = {
         .setRequired(true))
     ,
     execute: async (interaction: CommandInteraction) => {
-        let option = interaction.options.get('dice');
+        const option = interaction.options.get('dice');
         if (!option || !option.value) {
+            interaction.reply('Could not access input.');
             throw new Error('Could not access input.');
-        }
+        };
         // result = [total, [multiplier, dicesRolled[]]] ex. [15, [[1, [2,5,6,2]], [1,[2,3,4]]]]
-        let result = new DiceExpression(option.value.toString()).Evaluate();
-        let diceReply = DiceExpression.diceReply(result[1]);
-        interaction.reply("```Dice Rolled: "+ diceReply + "= " + result[0] + "```");
+        const result = new DiceExpression(option.value.toString()).Evaluate();
+        if (typeof result === 'string') {
+            interaction.reply(result);
+        };
+        const diceReply = DiceExpression.diceReply(result[1]);
+        interaction.reply("```Dice: "+option.value+"\nRoll: "+ diceReply + "= " + result[0] + "```");
     },
 };
 

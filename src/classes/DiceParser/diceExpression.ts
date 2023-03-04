@@ -6,7 +6,7 @@ export class DiceExpression {
     private static readonly _numberExpression: RegExp = /^[0-9]+$/;
     private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
 
-    private nodes: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
+    private parsedDiceExpressions: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
     
     constructor (expression: string) {
         this.DiceExpressionParsing(expression);
@@ -14,7 +14,7 @@ export class DiceExpression {
 
     public DiceExpressionParsing(expression: string) {
         if (!expression) {
-            throw new Error("Dice Expression was not successfully processed.");
+            return ("Dice Expression was not processed.");
         }
 
         // Reformat input
@@ -29,7 +29,7 @@ export class DiceExpression {
 
         // Making sure there are equal amounts of pairs
         if (expressions.length % 2 != 0) {
-            throw new Error("Dice expression was not in expected format.");
+            return ("Dice expression was in an unexpected format.");
         }
 
         const operators = {
@@ -43,7 +43,7 @@ export class DiceExpression {
             const operand = expressions[exprIndex+1];
 
             if (operator !== '+' && operator !== '-') {
-                throw new Error("Dice expression was not in expected format.");
+                return ("Dice expression was in a invalid format.");
             }
 
             // Sets negative or positive
@@ -51,13 +51,13 @@ export class DiceExpression {
 
             // if operand match regex, number or diceRoll
             if (DiceExpression._numberExpression.test(operand)) {
-                this.nodes.push([multiplier, new normalExpression(+operand)]);
+                this.parsedDiceExpressions.push([multiplier, new normalExpression(+operand)]);
             } else if (DiceExpression._diceExpression.test(operand)) {
                 // _ = whole match, and others are resulting groups
                 const [_, numberOfDice = 1, dieType = 100] = operand.match(DiceExpression._diceExpression) ?? [];
-                this.nodes.push([multiplier, new diceRollExpression(+numberOfDice, +dieType)]);
+                this.parsedDiceExpressions.push([multiplier, new diceRollExpression(+numberOfDice, +dieType)]);
             } else {
-                throw new Error("Dice expression was not in expected format.");
+                return ("Dice expression contained invalid characters or invalid format.");
             }
         }
 
@@ -71,13 +71,17 @@ export class DiceExpression {
         const dices: Array<[number , Array<number>]> = [];
         let result: number = 0;
         // value = multiplier, evaluated = iDiceExpression
-        for (const [value, evaluate] of this.nodes) {
+        for (const [multiplier, evaluate] of this.parsedDiceExpressions) {
             // evalu = [total, diceRolled]
             const evaluated = evaluate.Evaluate();
-            dices.push([value, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
-            result += value * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
+            dices.push([multiplier, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
+            result += multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
         }
         return [result, dices];
+    }
+
+    public GetAverage(): number {
+        return 0;
     }
 
     public static diceReply(dices: Array<[number, Array<number>]>): string {
