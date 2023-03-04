@@ -17,8 +17,10 @@ const command : Command = {
         if (!option || !option.value) {
             throw new Error('Could not access input.');
         }
+        // result = [total, [multiplier, dicesRolled[]]] ex. [15, [[1, [2,5,6,2]], [1,[2,3,4]]]]
         let result = new DiceExpression(option.value.toString()).Evaluate();
-        interaction.reply(`${result}`);
+        let diceReply = DiceExpression.diceReply(result[1]);
+        interaction.reply("```Dice Rolled: "+ diceReply + "= " + result[0] + "```");
     },
 };
 

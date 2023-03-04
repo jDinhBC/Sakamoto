@@ -11,15 +11,17 @@ export class diceRollExpression implements iDiceExpression{
         this._diceType = diceType;
     }
 
-    public Evaluate(): number {
+    public Evaluate(): [number, number[]] {
         let result: number = 0;
+        let dice: number[] = [];
         for (let numberDie = 0; numberDie < this._numberOfDice; ++numberDie) {
-            let number = this.RandomNumber(this._diceType);
+            let rng = this.RandomNumber(this._diceType);
             // number will always be at least 1
-            console.log(number);
-            result += number < 1 ? 1 : number;
+            let number = rng < 1 ? 1 : rng;
+            dice.push(number);
+            result += number;
         }
-        return result;
+        return [result, dice];
     }
 
     public GetAverage(): number {

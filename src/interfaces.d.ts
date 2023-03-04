@@ -8,7 +8,7 @@ export interface Command {
 }
 
 export interface iDiceExpression {
-    Evaluate(): number;
+    Evaluate(...args): any;
     GetAverage(): number;
 }
 

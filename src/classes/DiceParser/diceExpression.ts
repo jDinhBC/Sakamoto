@@ -18,7 +18,8 @@ export class DiceExpression {
             throw new Error("Dice Expression was not successfully processed.");
         }
 
-        let expressions = expression.trim().replace('+', ' + ').replace('-', ' - ').split(' ');
+        let expressions = expression.trim().replace(/\+/g, ' + ').replace(/\-/g, ' - ').split(' ');
+        console.log(expressions);
         // If empty
         if (!expressions) {
             expressions = new Array('0');
@@ -58,13 +59,48 @@ export class DiceExpression {
                 throw new Error("Dice expression was not in expected format.");
             }
         }
+
+        // Add functionality to order highest to lowest dice
+        // Add functionality to combine same dice
     }
 
-    public Evaluate() {
+    public Evaluate(): [number, Array<[number, Array<number>]>] {
+        //value[1] returns [number, number[]]
+        // dices: [multiplier, diceRolledNumbers/number ]
+        const dices: Array<[number , Array<number>]> = [];
         let result: number = 0;
-        this.nodes.forEach((value) => {
-            result += value[0] * value[1].Evaluate();
-        })
-        return result;
+        // value = multiplier, evaluated = iDiceExpression
+        for (const [value, evaluate] of this.nodes) {
+            // evalu = [total, diceRolled]
+            const evaluated = evaluate.Evaluate();
+            dices.push([value, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
+            result += value * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
+        }
+        return [result, dices];
+    }
+
+    public static diceReply(dices: Array<[number, Array<number>]>): string {
+        /*
+        Given:
+        [
+            [1, [2,5,6,2] ], 
+            [1, [2,5,6,7] ],
+            [-1, 1 ]
+        ]
+        Return:
+        '+2 +5 +6 +2 +2 +5 +6 +7 -1'
+        */
+        let diceReply: string = '';
+        dices.forEach(diceExprRolled => {
+            let multiplier = diceExprRolled[0] == 1 ? '+' : '-';
+            let dicesRolled = diceExprRolled[1];
+            if (dicesRolled.length > 1) {
+                diceReply += dicesRolled.map(diceValue => `${multiplier}${diceValue}`).join(' ').concat(' ');
+            } else {
+                diceReply += `${multiplier}${dicesRolled} `;
+            };
+        });
+        return diceReply;
+        // Dices Rolled: +1 +3 +5 -1 +2 = 10 
     }
 }
