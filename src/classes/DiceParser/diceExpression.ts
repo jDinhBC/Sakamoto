@@ -3,8 +3,8 @@ import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 
 export class DiceExpression {
-    private static readonly _numberExpression: RegExp = new RegExp("^[0-9]+$");
-    private static readonly _diceExpression: RegExp = new RegExp("^([0-9]*)d([0-9]+|%)$");
+    private static readonly _numberExpression: RegExp = /^[0-9]+$/;
+    private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
 
     private nodes: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
     
@@ -13,17 +13,14 @@ export class DiceExpression {
     }
 
     public DiceExpressionParsing(expression: string) {
-        // Reformats input
         if (!expression) {
             throw new Error("Dice Expression was not successfully processed.");
         }
 
+        // Reformat input
         let expressions = expression.trim().replace(/\+/g, ' + ').replace(/\-/g, ' - ').split(' ');
-        console.log(expressions);
         // If empty
-        if (!expressions) {
-            expressions = new Array('0');
-        }
+        expressions = expressions.length ? expressions : ['0'];
         
         // Making sure first operator-operand pair is a operator defaulting to '+'
         if (expressions[0] != '+' && expressions[0] != '-') {
@@ -35,26 +32,30 @@ export class DiceExpression {
             throw new Error("Dice expression was not in expected format.");
         }
 
+        const operators = {
+            '+': 1,
+            '-': -1,
+        };
+
         // Parsing pairs
         for (let exprIndex = 0; exprIndex < expressions.length; exprIndex+=2) {
-            let operator = expressions[exprIndex];
-            let operand = expressions[exprIndex+1];
+            const operator = expressions[exprIndex];
+            const operand = expressions[exprIndex+1];
 
-            if (operator != '+' && operator != '-') {
+            if (operator !== '+' && operator !== '-') {
                 throw new Error("Dice expression was not in expected format.");
             }
 
             // Sets negative or positive
-            let multiplier = operator == '+' ? +1 : -1;
+            const multiplier = operators[operator];
 
             // if operand match regex, number or diceRoll
             if (DiceExpression._numberExpression.test(operand)) {
                 this.nodes.push([multiplier, new normalExpression(+operand)]);
             } else if (DiceExpression._diceExpression.test(operand)) {
-                let regexParsed = operand.match(DiceExpression._diceExpression);
-                let numberOfDice = regexParsed == null ? 1 : +regexParsed[1];
-                let dieType = regexParsed == null ? 100 : +regexParsed[2];
-                this.nodes.push([multiplier, new diceRollExpression(numberOfDice, dieType)]);
+                // _ = whole match, and others are resulting groups
+                const [_, numberOfDice = 1, dieType = 100] = operand.match(DiceExpression._diceExpression) ?? [];
+                this.nodes.push([multiplier, new diceRollExpression(+numberOfDice, +dieType)]);
             } else {
                 throw new Error("Dice expression was not in expected format.");
             }

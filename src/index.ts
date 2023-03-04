@@ -26,3 +26,4 @@ readdirSync(handlersDir).forEach(handler => {
 });
 
 client.login(process.env.CLIENT_TOKEN);
+client.isReady();

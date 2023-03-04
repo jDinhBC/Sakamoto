@@ -12,15 +12,11 @@ export class diceRollExpression implements iDiceExpression{
     }
 
     public Evaluate(): [number, number[]] {
-        let result: number = 0;
-        let dice: number[] = [];
-        for (let numberDie = 0; numberDie < this._numberOfDice; ++numberDie) {
-            let rng = this.RandomNumber(this._diceType);
-            // number will always be at least 1
-            let number = rng < 1 ? 1 : rng;
-            dice.push(number);
-            result += number;
-        }
+        const dice = Array.from({ length: this._numberOfDice }, () => {
+            const rng = this.RandomNumber(this._diceType);
+            return Math.max(rng | 0, 1);
+        });
+        const result = dice.reduce((sum, value) => sum + value, 0);
         return [result, dice];
     }
 
