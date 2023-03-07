@@ -2,10 +2,10 @@ import { Client } from "discord.js";
 import { BotEvents } from "../interfaces";
 
 const event: BotEvents = {
-    name: "Ready",
+    name: "ready",
     once: true,
     execute: async (client: Client) => {
-        console.log(`Successfully Logged into Discord as , ${client.user?.tag}`);
+        console.log(`\nSuccessfully logged in as ${client.user?.tag}`);
     }
 };
 

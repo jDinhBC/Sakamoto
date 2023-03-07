@@ -15,6 +15,7 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages,
     ]
 });
 
@@ -26,3 +27,4 @@ readdirSync(handlersDir).forEach(handler => {
 });
 
 client.login(process.env.CLIENT_TOKEN);
+client.isReady();
