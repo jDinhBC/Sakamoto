@@ -1,24 +1,34 @@
+import test from "node:test";
 import { iDiceExpression } from "../../interfaces";
+import { Result } from "../Other/Result";
 import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 
 export class DiceExpression {
     private static readonly _numberExpression: RegExp = /^[0-9]+$/;
     private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
+    private static readonly _validCharacters: RegExp = /^[0-9d\s\-+]+$/;
+    private readonly _expression: string;
 
     private parsedDiceExpressions: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
     
     constructor (expression: string) {
-        this.DiceExpressionParsing(expression);
+        this._expression = expression;
     }
 
-    public DiceExpressionParsing(expression: string) {
+    public DiceExpressionParsing(): Result<[number, Array<[number, Array<number>]>]> {
+        let expression = this._expression;
         if (!expression) {
-            return ("Dice Expression was not processed.");
+            return Result.fail("Dice Expression was not processed.");
+        }
+
+        if (!DiceExpression._validCharacters.test(expression)) {
+            return Result.fail("Dice Expression contained illegal characters.");
         }
 
         // Reformat input
-        let expressions = expression.trim().replace(/\+/g, ' + ').replace(/\-/g, ' - ').split(' ');
+        let expressions = expression.trim().replace(/\s/g,'').replace(/\+/g, ' + ').replace(/\-/g, ' - ').split(' ');
+        
         // If empty
         expressions = expressions.length ? expressions : ['0'];
         
@@ -29,7 +39,7 @@ export class DiceExpression {
 
         // Making sure there are equal amounts of pairs
         if (expressions.length % 2 != 0) {
-            return ("Dice expression was in an unexpected format.");
+            return Result.fail("Dice expression was in an unexpected format.");
         }
 
         const operators = {
@@ -43,7 +53,7 @@ export class DiceExpression {
             const operand = expressions[exprIndex+1];
 
             if (operator !== '+' && operator !== '-') {
-                return ("Dice expression was in a invalid format.");
+                return Result.fail("Dice expression was in a invalid format.");
             }
 
             // Sets negative or positive
@@ -57,15 +67,17 @@ export class DiceExpression {
                 const [_, numberOfDice = 1, dieType = 100] = operand.match(DiceExpression._diceExpression) ?? [];
                 this.parsedDiceExpressions.push([multiplier, new diceRollExpression(+numberOfDice, +dieType)]);
             } else {
-                return ("Dice expression contained invalid characters or invalid format.");
+                return Result.fail("Dice expression was in a invalid format.");
             }
         }
 
         // Add functionality to order highest to lowest dice
         // Add functionality to combine same dice
+
+        return this.Evaluate();
     }
 
-    public Evaluate(): [number, Array<[number, Array<number>]>] {
+    public Evaluate(): Result<[number, Array<[number, Array<number>]>]> {
         //value[1] returns [number, number[]]
         // dices: [multiplier, diceRolledNumbers/number ]
         const dices: Array<[number , Array<number>]> = [];
@@ -73,18 +85,18 @@ export class DiceExpression {
         // value = multiplier, evaluated = iDiceExpression
         for (const [multiplier, evaluate] of this.parsedDiceExpressions) {
             // evalu = [total, diceRolled]
-            const evaluated = evaluate.Evaluate();
+            const evaluated = evaluate.Evaluate().value;
             dices.push([multiplier, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
             result += multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
         }
-        return [result, dices];
+        return Result.success([result, dices]);
     }
 
     public GetAverage(): number {
         return 0;
     }
 
-    public static diceReply(dices: Array<[number, Array<number>]>): string {
+    public static diceReply(dices: Array<[number, Array<number>]>): Result<string> {
         /*
         Given:
         [
@@ -105,7 +117,7 @@ export class DiceExpression {
                 diceReply += `${multiplier}${dicesRolled} `;
             };
         });
-        return diceReply;
+        return Result.success(diceReply);
         // Dices Rolled: +1 +3 +5 -1 +2 = 10 
     }
 }

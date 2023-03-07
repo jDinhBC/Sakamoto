@@ -1,4 +1,5 @@
 import { iDiceExpression } from "../../interfaces";
+import { Result } from "../Other/Result";
 
 export class normalExpression implements iDiceExpression{
     private theNumber: number;
@@ -7,11 +8,11 @@ export class normalExpression implements iDiceExpression{
         this.theNumber = number;
     }
 
-    public Evaluate(): number {
-        return this.theNumber;
+    public Evaluate(): Result<number> {
+        return Result.success(this.theNumber);
     }
 
-    public GetAverage(): number {
-        return this.theNumber;
+    public GetAverage(): Result<number> {
+        return Result.success(this.theNumber);
     }
 }

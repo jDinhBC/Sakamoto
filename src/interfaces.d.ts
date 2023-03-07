@@ -8,8 +8,8 @@ export interface Command {
 }
 
 export interface iDiceExpression {
-    Evaluate(...args): any;
-    GetAverage(): number;
+    Evaluate(...args): Result;
+    GetAverage(): Result;
 }
 
 export interface BotEvents {
