@@ -15,7 +15,7 @@ export interface iDiceExpression {
 export interface BotEvents {
     name: string;
     once?: boolean | false;
-    async execute: (...args?) => Promise<void>;
+    async execute: (...args?) => Promise<Result>;
 }
 
 declare global {

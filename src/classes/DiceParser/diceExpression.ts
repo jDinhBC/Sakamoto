@@ -1,6 +1,5 @@
-import test from "node:test";
 import { iDiceExpression } from "../../interfaces";
-import { Result } from "../Other/Result";
+import { Result } from "../other/Result";
 import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 

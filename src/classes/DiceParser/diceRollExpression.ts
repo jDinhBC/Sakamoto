@@ -1,7 +1,7 @@
 import { iDiceExpression } from "../../interfaces";
 import { createHash } from 'crypto';
 import seedrandom from 'seedrandom';
-import { Result } from "../Other/Result";
+import { Result } from "../other/Result";
 
 export class diceRollExpression implements iDiceExpression{
     private _numberOfDice: number;
