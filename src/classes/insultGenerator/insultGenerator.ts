@@ -1,7 +1,9 @@
+import { logMethod } from "../other/commandLogger";
 import { Result } from "../other/Result";
 
 export class insultGenerator {
 
+    @logMethod
     async getInsult() {
         try {
             const request = await fetch('https://evilinsult.com/generate_insult.php?lang=en&type=json');

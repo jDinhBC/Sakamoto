@@ -2,6 +2,7 @@ import { iDiceExpression } from "../../interfaces";
 import { Result } from "../other/Result";
 import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
+import { logMethod } from "../other/commandLogger";
 
 export class DiceExpression {
     private static readonly _numberExpression: RegExp = /^[0-9]+$/;
@@ -15,6 +16,7 @@ export class DiceExpression {
         this._expression = expression;
     }
 
+    @logMethod
     public DiceExpressionParsing(): Result<[number, Array<[number, Array<number>]>]> {
         let expression = this._expression;
         if (!expression) {
@@ -76,6 +78,7 @@ export class DiceExpression {
         return this.Evaluate();
     }
 
+    @logMethod
     public Evaluate(): Result<[number, Array<[number, Array<number>]>]> {
         //value[1] returns [number, number[]]
         // dices: [multiplier, diceRolledNumbers/number ]
