@@ -1,5 +1,5 @@
 import { iDiceExpression } from "../../interfaces";
-import { Result } from "../Other/Result";
+import { Result } from "../other/Result";
 
 export class normalExpression implements iDiceExpression{
     private theNumber: number;

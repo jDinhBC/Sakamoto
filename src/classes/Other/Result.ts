@@ -13,7 +13,7 @@ export class Result<T> {
             throw new Error(`Returned success and error: ${error}`);
         }
         if (!success && !error) {
-            throw new Error('Returned failure and no error')
+            throw new Error('Returned failure and no error');
         }
         this.success = success;
         this.isFailure = !success;
