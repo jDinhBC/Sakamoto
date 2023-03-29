@@ -73,7 +73,6 @@ export class DiceExpression {
         return this.Evaluate();
     }
 
-    @logMethod
     public Evaluate(): Result<[number, Array<[number, Array<number>]>]> {
         //value[1] returns [number, number[]]
         // dices: [multiplier, diceRolledNumbers/number ]
