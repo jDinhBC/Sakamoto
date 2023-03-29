@@ -8,17 +8,12 @@ export class DiceExpression {
     private static readonly _numberExpression: RegExp = /^[0-9]+$/;
     private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
     private static readonly _validCharacters: RegExp = /^[0-9d\s\-+]+$/;
-    private readonly _expression: string;
 
     private parsedDiceExpressions: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
     
-    constructor (expression: string) {
-        this._expression = expression;
-    }
-
     @logMethod
-    public DiceExpressionParsing(): Result<[number, Array<[number, Array<number>]>]> {
-        let expression = this._expression;
+    public DiceExpressionParsing(_expression: string): Result<[number, Array<[number, Array<number>]>]> {
+        let expression = _expression;
         if (!expression) {
             return Result.fail("Dice Expression was not processed.");
         }
