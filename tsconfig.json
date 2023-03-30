@@ -3,12 +3,16 @@
     "experimentalDecorators": true,
     "target": "ES6",
     "module": "CommonJS",
-    "rootDir": "./src",
+    "rootDir": "./",
     "outDir": "./prod",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": [
+    "tests",
+    "src"
+  ]
 }

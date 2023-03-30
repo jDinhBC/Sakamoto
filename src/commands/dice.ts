@@ -22,7 +22,7 @@ const command : Command = {
         };
 
         // result = [total, [multiplier, dicesRolled[]]] ex. [15, [[1, [2,5,6,2]], [1,[2,3,4]]]]
-        const result = new DiceExpression(option.value.toString()).DiceExpressionParsing();
+        const result = new DiceExpression().DiceExpressionParsing(option.value.toString());
         if (result.isFailure) {
             interaction.reply({content:"```" + `${result.error}` + "```", ephemeral: true});
             return Result.fail(`Failed to execute ${interaction.commandName}, Error: ${result.error}`);
