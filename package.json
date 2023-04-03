@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node -r dotenv/config ./prod/index.js",
-    "test": "jest"
+    "test": "jest",
+    "watch": "tsc-watch"
   },
   "repository": {
     "type": "git",

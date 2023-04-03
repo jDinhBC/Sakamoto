@@ -1,4 +1,3 @@
-import { Result } from "./Result";
 import fs from 'fs';
 import path from "path";
 
