@@ -4,15 +4,21 @@ import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 import { logMethod } from "../other/commandLogger";
 
+enum DiceExpressionOptions {
+    none,
+    SimplifyDiceExpression,
+    OrderDiceExpression
+}
+
 export class DiceExpression {
     private static readonly _numberExpression: RegExp = /^[0-9]+$/;
     private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
     private static readonly _validCharacters: RegExp = /^[0-9d\s\-+]+$/;
 
-    private parsedDiceExpressions: Array<[number, iDiceExpression]> = new Array<[number, iDiceExpression]>();
+    private parsedDiceExpressions: Array<Map<number, iDiceExpression>> = new Array<Map<number, iDiceExpression>>();
     
     @logMethod
-    public DiceExpressionParsing(_expression: string): Result<[number, Array<[number, Array<number>]>]> {
+    public DiceExpressionParsing(_expression: string, options: DiceExpressionOptions): Result<[number, Array<[number, Array<number>]>]> {
         let expression = _expression;
         if (!expression) {
             return Result.fail("Dice Expression was not processed.");
@@ -57,20 +63,40 @@ export class DiceExpression {
 
             // if operand match regex, number or diceRoll
             if (DiceExpression._numberExpression.test(operand)) {
-                this.parsedDiceExpressions.push([multiplier, new normalExpression(+operand)]);
+                this.parsedDiceExpressions.push(new Map<number, iDiceExpression>([[multiplier, new normalExpression(+operand)]]));
             } else if (DiceExpression._diceExpression.test(operand)) {
                 // _ = whole match, and others are resulting groups
                 const [_, numberOfDice = 1, dieType = 100] = operand.match(DiceExpression._diceExpression) ?? [];
-                this.parsedDiceExpressions.push([multiplier, new diceRollExpression(+numberOfDice, +dieType)]);
+                this.parsedDiceExpressions.push(new Map<number, iDiceExpression>([[multiplier, new diceRollExpression(+numberOfDice, +dieType)]]));
             } else {
                 return Result.fail("Dice expression was in a invalid format.");
             }
         }
 
         // Add functionality to order highest to lowest dice
+        if (options == DiceExpressionOptions.OrderDiceExpression) {
+            
+        }
         // Add functionality to combine same dice
+        // element: [ 1 || -1 , object( normalExpression || diceRollExpression) ]
+        /* parsedDiceExpression:
+        [ 
+            [1, diceRollExpression(diceType = 6, numDice = 3) ],
+            [1, diceRollExpression(diceType = 6, numDice = 5) ],
+            [1, normalExpression(number = 3) ],
+            [1, normalExpression(number = 8) ],
+            [1, diceRollExpression(diceType = 20, numDice = 2) ],
+            [-1, diceRollExpression(diceType = 4, numDice = 2) ],
+            [-1, diceRollExpression(diceType = 8, numDice = 3) ],
+            [-1, diceRollExpression(diceType = 6, numDice = 1) ],
+            [-1, normalExpression(number = 5) ],
+            [-1, normalExpression(number = 2) ]
+        ]
+        */
+        if (options == DiceExpressionOptions.SimplifyDiceExpression) {
+        }
 
-        return this.Evaluate();
+       return this.Evaluate();
     }
 
     public Evaluate(): Result<[number, Array<[number, Array<number>]>]> {
@@ -79,12 +105,14 @@ export class DiceExpression {
         const dices: Array<[number , Array<number>]> = [];
         let result: number = 0;
         // value = multiplier, evaluated = iDiceExpression
-        for (const [multiplier, evaluate] of this.parsedDiceExpressions) {
-            // evalu = [total, diceRolled]
-            const evaluated = evaluate.Evaluate().value;
-            dices.push([multiplier, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
-            result += multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
-        }
+        this.parsedDiceExpressions.forEach((map: Map<number, iDiceExpression>) => {
+            for (const [multiplier, evaluate] of map) {
+                // evalu = [total, diceRolled]
+                const evaluated = evaluate.Evaluate().value;
+                dices.push([multiplier, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
+                result += multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
+            }
+        })
         return Result.success([result, dices]);
     }
 
