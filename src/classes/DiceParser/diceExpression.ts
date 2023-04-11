@@ -15,7 +15,7 @@ export class DiceExpression {
     private static readonly _diceExpression: RegExp = /^([0-9]*)d([0-9]+|%)$/;
     private static readonly _validCharacters: RegExp = /^[0-9d\s\-+]+$/;
 
-    private parsedDiceExpressions: Array<Map<number, iDiceExpression>> = new Array<Map<number, iDiceExpression>>();
+    private parsedDiceExpressions: Array<Map<string,[number, iDiceExpression]>> = new Array<Map<string,[number, iDiceExpression]>>();
     
     @logMethod
     public DiceExpressionParsing(_expression: string, options: DiceExpressionOptions): Result<[number, Array<[number, Array<number>]>]> {
@@ -63,11 +63,11 @@ export class DiceExpression {
 
             // if operand match regex, number or diceRoll
             if (DiceExpression._numberExpression.test(operand)) {
-                this.parsedDiceExpressions.push(new Map<number, iDiceExpression>([[multiplier, new normalExpression(+operand)]]));
+                this.parsedDiceExpressions.push(new Map<string, [number,iDiceExpression]>([["dice",[multiplier, new normalExpression(+operand)]]]));
             } else if (DiceExpression._diceExpression.test(operand)) {
                 // _ = whole match, and others are resulting groups
                 const [_, numberOfDice = 1, dieType = 100] = operand.match(DiceExpression._diceExpression) ?? [];
-                this.parsedDiceExpressions.push(new Map<number, iDiceExpression>([[multiplier, new diceRollExpression(+numberOfDice, +dieType)]]));
+                this.parsedDiceExpressions.push(new Map<string, [number,iDiceExpression]>([["dice",[multiplier, new diceRollExpression(+numberOfDice, +dieType)]]]));
             } else {
                 return Result.fail("Dice expression was in a invalid format.");
             }
@@ -81,19 +81,23 @@ export class DiceExpression {
         // element: [ 1 || -1 , object( normalExpression || diceRollExpression) ]
         /* parsedDiceExpression:
         [ 
-            [1, diceRollExpression(diceType = 6, numDice = 3) ],
-            [1, diceRollExpression(diceType = 6, numDice = 5) ],
-            [1, normalExpression(number = 3) ],
-            [1, normalExpression(number = 8) ],
-            [1, diceRollExpression(diceType = 20, numDice = 2) ],
-            [-1, diceRollExpression(diceType = 4, numDice = 2) ],
-            [-1, diceRollExpression(diceType = 8, numDice = 3) ],
-            [-1, diceRollExpression(diceType = 6, numDice = 1) ],
-            [-1, normalExpression(number = 5) ],
-            [-1, normalExpression(number = 2) ]
+            {1, diceRollExpression(diceType = 6, numDice = 3) },
+            {1, diceRollExpression(diceType = 6, numDice = 5) },
+            {1, normalExpression(number = 3) },
+            {1, normalExpression(number = 8) },
+            {1, diceRollExpression(diceType = 20, numDice = 2) },
+            {-1, diceRollExpression(diceType = 4, numDice = 2) },
+            {-1, diceRollExpression(diceType = 8, numDice = 3) },
+            {-1, diceRollExpression(diceType = 6, numDice = 1) },
+            {-1, normalExpression(number = 5) },
+            {-1, normalExpression(number = 2) }
         ]
         */
         if (options == DiceExpressionOptions.SimplifyDiceExpression) {
+            let diceTypes = this.parsedDiceExpressions.filter(map => {
+                const value = map.get('dice');
+                return value instanceof iDiceExpression;
+            })
         }
 
        return this.Evaluate();
