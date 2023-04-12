@@ -134,53 +134,41 @@ export class DiceExpression {
             [-1, normalExpression(number = 2) ]
         ]
         */
-        console.log('before sort')
-        this.parsedDiceExpressions.forEach(dice => {
-            console.log(dice);
-        })
 
         if (options == DiceExpressionOptions.SimplifyDiceExpression) {
 
             // diceTypes = all dice Expressions
-            // ************* FIX *****************
-            const diceTypes = Array.from(new Set(
-                diceRolls.filter(dice => {
-                    const [key, value] = [...dice][0];
-                    if (value instanceof diceRollExpression) {
-                        return value.DiceType;
+            const diceTypes = new Set(diceRolls.filter(dice => {
+                const [_, value] = [...dice][0] as [number, iDiceExpression];
+                return value instanceof diceRollExpression;
+            }).map(dice => {
+                const [_, value] = [...dice][0] as [number, diceRollExpression];
+                return value.DiceType;
+            }));
+            // simplify dices
+            let normalizedDice = [];
+            for (const diceType of diceTypes) {
+                let numDiceOfdiceType = 0;
+                for (const dice of diceRolls) {
+                    const [multiplierOfEachDie, die] = [...dice][0] as [number, diceRollExpression];
+                    if (die.DiceType === diceType) {
+                        numDiceOfdiceType += multiplierOfEachDie * die.NumberOfDice;
                     }
-                })
-            ));
+                }
+                normalizedDice.push(new Map([[(numDiceOfdiceType > 0 ? 1 : -1), new diceRollExpression(Math.abs(numDiceOfdiceType), diceType)]]));
+            }
+            // simplify normal number expressions
 
-            let normalizedDice = diceTypes.map(diceType => {
-                const [multiplierOfOriginal, _diceType] = [...diceType][0] as [number, diceRollExpression];
-                let numDiceOfdiceType = diceRolls
-                .filter(dice => {
-                    const [_, value] = [...dice][0] as [number, diceRollExpression];
-                    return _diceType.DiceType === value.DiceType;
-                })
-                .reduce((sum, current) => {
-                    const [multiplierOfEachDie, die] = [...current][0] as [number, diceRollExpression];
-                    return sum + (multiplierOfEachDie *die.NumberOfDice);
-                }, 0);
-
-                return new Map([[multiplierOfOriginal, new diceRollExpression(numDiceOfdiceType, +_diceType.DiceType)]]);
-            });
-            //sum normal number Expressions
-
-            let normalizedNumber = normalRolls.reduce((sum, current) => {
-                const [key, value] = [...current][0] as [number, normalExpression];
-                return sum + (key * value.Number);
-            }, 0);
+            let normalizedNumber = 0;
+            for (const roll of normalRolls) {
+                const [key, value] = [...roll][0] as [number, normalExpression];
+                normalizedNumber += key * value.Number;
+            }
 
             //set to new simplified list [dicerolls first, number]
             this.parsedDiceExpressions = normalizedNumber === 0 ? normalizedDice 
-            : [...normalizedDice, new Map<number, iDiceExpression>([[(normalizedNumber > 0 ? 1: -1), new normalExpression(normalizedNumber)]])];
+            : [...normalizedDice, new Map<number, iDiceExpression>([[(normalizedNumber > 0 ? 1: -1), new normalExpression(Math.abs(normalizedNumber))]])];
         }
-        console.log("after sort")
-        this.parsedDiceExpressions.forEach(dice => {
-            console.log(dice);
-        })
         
         return this.Evaluate();
     }
@@ -211,11 +199,6 @@ export class DiceExpression {
 
   result = evaluations.reduce((acc, curr) => acc + curr, 0);
         */
-
-
-
-
-
 
 
         return Result.success([result, dices]);
@@ -249,8 +232,4 @@ export class DiceExpression {
         return Result.success(diceReply);
         // Dices Rolled: +1 +3 +5 -1 +2 = 10 
     }
-
-    private isiDiceExpression(obj: any): obj is iDiceExpression {
-        return "Evaluate" in obj && "GetAverage" in obj;
-    } 
 }
