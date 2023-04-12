@@ -15,4 +15,8 @@ export class normalExpression implements iDiceExpression{
     public GetAverage(): Result<number> {
         return Result.success(this.theNumber);
     }
+
+    public get Number(): number {
+        return this.theNumber;
+    }
 }

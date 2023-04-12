@@ -4,10 +4,9 @@ import { diceRollExpression } from "./diceRollExpression";
 import { normalExpression } from "./normalExpression";
 import { logMethod } from "../other/commandLogger";
 
-enum DiceExpressionOptions {
+export enum DiceExpressionOptions {
     none,
-    SimplifyDiceExpression,
-    OrderDiceExpression
+    SimplifyDiceExpression
 }
 
 export class DiceExpression {
@@ -73,10 +72,52 @@ export class DiceExpression {
             }
         }
 
-        // Add functionality to order highest to lowest dice
-        if (options == DiceExpressionOptions.OrderDiceExpression) {
-            
-        }
+        // Sorts dice Roll Expressions
+        const diceRolls = this.parsedDiceExpressions
+        .filter(map => {
+            const [key, value] = [...map][0];
+            return value instanceof diceRollExpression;
+        })
+        .sort((a, b) => {
+            //sort by multiplier decending
+            const aKey = a.keys().next().value;
+            const bKey = b.keys().next().value;
+            if (aKey > bKey) {
+              return -1;
+            } else if (aKey < bKey) {
+              return 1;
+            } else {
+                // if equal then sort by dice type decending
+                const aDice = a.entries().next().value;
+                const bDice = b.entries().next().value;
+                if (aDice.DiceType < bDice.DiceType) {
+                    return -1;
+                } else if (aDice.DiceType > bDice.DiceType) {
+                    return 1;
+                } else {
+                    // if equal then sort by number of dice decending
+                    return aDice.NumberOfDice - bDice.NumberOfDice;
+                }
+            }
+        });
+
+        // Sorts normal expressions
+
+        const normalRolls = this.parsedDiceExpressions.filter(map => {
+            const [key, value] = [...map][0];
+            return value instanceof normalExpression;
+        }).sort((a,b) => {
+            const aNum = a.entries().next().value;
+            const bNum = b.entries().next().value;
+            if (aNum < bNum) {
+                return -1;
+            }
+            if (aNum > bNum) {
+                return 1;
+            }
+            return 0;
+        })
+
         // Add functionality to combine same dice
         // element: [ 1 || -1 , object( normalExpression || diceRollExpression) ]
         /* parsedDiceExpression:
@@ -93,10 +134,55 @@ export class DiceExpression {
             [-1, normalExpression(number = 2) ]
         ]
         */
-        if (options == DiceExpressionOptions.SimplifyDiceExpression) {
-        }
+        console.log('before sort')
+        this.parsedDiceExpressions.forEach(dice => {
+            console.log(dice);
+        })
 
-       return this.Evaluate();
+        if (options == DiceExpressionOptions.SimplifyDiceExpression) {
+
+            // diceTypes = all dice Expressions
+            // ************* FIX *****************
+            const diceTypes = Array.from(new Set(
+                diceRolls.filter(dice => {
+                    const [key, value] = [...dice][0];
+                    if (value instanceof diceRollExpression) {
+                        return value.DiceType;
+                    }
+                })
+            ));
+
+            let normalizedDice = diceTypes.map(diceType => {
+                const [multiplierOfOriginal, _diceType] = [...diceType][0] as [number, diceRollExpression];
+                let numDiceOfdiceType = diceRolls
+                .filter(dice => {
+                    const [_, value] = [...dice][0] as [number, diceRollExpression];
+                    return _diceType.DiceType === value.DiceType;
+                })
+                .reduce((sum, current) => {
+                    const [multiplierOfEachDie, die] = [...current][0] as [number, diceRollExpression];
+                    return sum + (multiplierOfEachDie *die.NumberOfDice);
+                }, 0);
+
+                return new Map([[multiplierOfOriginal, new diceRollExpression(numDiceOfdiceType, +_diceType.DiceType)]]);
+            });
+            //sum normal number Expressions
+
+            let normalizedNumber = normalRolls.reduce((sum, current) => {
+                const [key, value] = [...current][0] as [number, normalExpression];
+                return sum + (key * value.Number);
+            }, 0);
+
+            //set to new simplified list [dicerolls first, number]
+            this.parsedDiceExpressions = normalizedNumber === 0 ? normalizedDice 
+            : [...normalizedDice, new Map<number, iDiceExpression>([[(normalizedNumber > 0 ? 1: -1), new normalExpression(normalizedNumber)]])];
+        }
+        console.log("after sort")
+        this.parsedDiceExpressions.forEach(dice => {
+            console.log(dice);
+        })
+        
+        return this.Evaluate();
     }
 
     public Evaluate(): Result<[number, Array<[number, Array<number>]>]> {
@@ -113,6 +199,25 @@ export class DiceExpression {
                 result += multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
             }
         })
+
+        /*
+        const evaluations = this.parsedDiceExpressions.flatMap(map => {
+    return Array.from(map.entries(), ([multiplier, evaluate]) => {
+      const evaluated = evaluate.Evaluate().value;
+      dices.push([multiplier, Array.isArray(evaluated[1]) ? evaluated[1] : evaluated]);
+      return multiplier * (Array.isArray(evaluated) ? evaluated[0] : evaluated);
+    });
+  });
+
+  result = evaluations.reduce((acc, curr) => acc + curr, 0);
+        */
+
+
+
+
+
+
+
         return Result.success([result, dices]);
     }
 
@@ -144,4 +249,8 @@ export class DiceExpression {
         return Result.success(diceReply);
         // Dices Rolled: +1 +3 +5 -1 +2 = 10 
     }
+
+    private isiDiceExpression(obj: any): obj is iDiceExpression {
+        return "Evaluate" in obj && "GetAverage" in obj;
+    } 
 }
